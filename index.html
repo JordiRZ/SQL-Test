@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de SQL</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prueba de SQL</h1>
+
+    <h2>Tablas:</h2>
+    <pre>
+Clientes
+idCliente
+Nombre
+CIF
+Dirección
+    </pre>
+    <pre>
+Facturas
+idFactura
+idCliente
+baseImponible
+iva
+estadoPagamanito
+    </pre>
+    <pre>
+Productos
+idProducto
+nombre
+precioCost
+precioVenta
+    </pre>
+    <pre>
+Linies_Factura
+idLiniaFactura
+idFactura
+idProducto
+    </pre>
+
+    <h2>1. Obtener los primeros 15 clientes ordenados por el campo idCliente de forma ascendente</h2>
+    <pre>
+SELECT TOP 15 *
+FROM Clientes
+ORDER BY idCliente ASC;
+    </pre>
+
+    <h2>2. Obtener la suma de la baseImponible y cuántas facturas tiene el cliente con CIF A7789118</h2>
+    <pre>
+SELECT SUM(Facturas.baseImponible) AS SumaBaseImponible, COUNT(Facturas.idFactura) AS NumeroFacturas
+FROM Facturas
+INNER JOIN Clientes ON Facturas.idCliente = Clientes.idCliente
+WHERE Clientes.CIF = 'A7789118';
+    </pre>
+
+    <h2>3. Obtener todas las facturas en las que aparece el producto con idProducto = 35</h2>
+    <pre>
+SELECT DISTINCT Facturas.*
+FROM Facturas
+INNER JOIN Linies_Factura ON Facturas.idFactura = Linies_Factura.idFactura
+WHERE Linies_Factura.idProducto = 35;
+    </pre>
+
+    <h2>4. Eliminar todas las facturas de los clientes con CIF que comience con ‘C’ y que tengan una baseImponible mayor de 1000€</h2>
+    <pre>
+DELETE FROM Facturas
+WHERE idCliente IN (
+    SELECT idCliente
+    FROM Clientes
+    WHERE CIF LIKE 'C%'
+) AND baseImponible > 1000;
+    </pre>
+
+    <h2>5. Actualizar el estadoPago al estado 'Pagado' de todas las facturas en las que aparezcan productos con un precioVenta > precioCost</h2>
+    <pre>
+UPDATE Facturas
+SET estadoPagamanito = 'Pagado'
+WHERE idFactura IN (
+    SELECT DISTINCT Linies_Factura.idFactura
+    FROM Linies_Factura
+    INNER JOIN Productos ON Linies_Factura.idProducto = Productos.idProducto
+    WHERE Productos.precioVenta > Productos.precioCost
+);
+    </pre>
+
+</body>
+</html>
